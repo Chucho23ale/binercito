@@ -39,11 +39,11 @@
   void setMotorRight(int dir, int pwmVal, int pwm, int in1, int in2){
     analogWrite(pwm,pwmVal); // Asignación de velocidad
     // Asignación de dirección
-    if(dir == 1){       // Adelante
+    if(dir == -1){       // Atras
       digitalWrite(in1,HIGH);
       digitalWrite(in2,LOW);
     }       
-    else if(dir == -1){ // Atrás
+    else if(dir == 1){ // Adelant
       digitalWrite(in1,LOW);
       digitalWrite(in2,HIGH);
     }
@@ -56,11 +56,11 @@
   void setMotorLeft(int dir, int pwmVal, int pwm, int in3, int in4){
     analogWrite(pwm,pwmVal);
   
-    if(dir == 1){
+    if(dir == -1){
       digitalWrite(in3,HIGH);
       digitalWrite(in4,LOW);
     }
-    else if(dir == -1){
+    else if(dir == 1){
       digitalWrite(in3,LOW);
       digitalWrite(in4,HIGH);
     }
