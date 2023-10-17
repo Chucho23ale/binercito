@@ -99,9 +99,9 @@ void loop() {
 void Encoder()
 {
   if (digitalRead(pinCanalA)==digitalRead(pinCanalB)){
-    contador++;}
+    contador--;}
     else{
-      contador--;}
+      contador++;}
 }
 
 unsigned int index;

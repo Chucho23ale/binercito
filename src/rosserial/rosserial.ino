@@ -110,10 +110,10 @@ void loop() {
  {
   v = twist.linear.x;
   w = twist.angular.z;
-  wl_ref = (2.0 * v - WHEELDIST * w) / (2.0 * WHEELRAD);
-  wr_ref = (2.0 * v + WHEELDIST * w) / (2.0 * WHEELRAD);
+  wl_ref = ((2.0 * v - WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
+  wr_ref = ((2.0 * v + WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
   
- tiempo=micros();
+  tiempo=micros();
   posl=contadorl;
   posr=contadorr;
   //Realizar la converción según el motor
@@ -153,7 +153,7 @@ void loop() {
     analogWrite(motorPin1l,0);
     analogWrite(motorPin2l,(int)(-ul[0]));
   }
-  if ((int)ul[0]>=0){
+  else if ((int)ul[0]>=0){
     analogWrite(motorPin1l,(int)ul[0]);
     analogWrite(motorPin2l,0);
   }
@@ -163,7 +163,7 @@ void loop() {
     analogWrite(motorPin1r,0);
     analogWrite(motorPin2r,(int)(-ur[0]));
   }
-  if ((int)ur[0]>=0){
+  else if ((int)ur[0]>=0){
     analogWrite(motorPin1r,(int)ur[0]);
     analogWrite(motorPin2r,0);
   }
