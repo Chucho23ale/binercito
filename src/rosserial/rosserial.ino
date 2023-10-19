@@ -11,6 +11,7 @@
 #define WHEELDIST 0.34 //Distance between wheels (m) 
 
 
+
 ros::NodeHandle  nh;
 std_msgs::Float32 wl_ref_msg, wl_msg, wr_ref_msg, wr_msg;
 geometry_msgs::Twist twist;
@@ -61,16 +62,15 @@ float wr=0;
 float v = 0;
 float w = 0;
 
-void messageCb( const geometry_msgs::Twist& tw_cb){
+void messageCb(const geometry_msgs::Twist &tw_cb){
   twist = tw_cb;
 }
 
-ros::Subscriber<std_msgs::String> sub("ard_motor", &messageCb );
+ros::Subscriber<geometry_msgs::Twist>sub("ard_motor", &messageCb);
 
 
 //Configuracion de puertos E/S, Serial e interrupciones
 void setup() {
-  Serial.begin(9600);
   attachInterrupt(digitalPinToInterrupt(pinCanalAl),Encoder,RISING);
   pinMode(pinCanalAl,INPUT);
   pinMode(pinCanalBl,INPUT);
@@ -198,7 +198,7 @@ void Encoder()
 void Encoder2()
 {
   if (digitalRead(pinCanalAr)==digitalRead(pinCanalBr)){
-    contadorr--;}
+    contadorr++;}
     else{
-      contadorr++;}
+      contadorr--;}
 }
