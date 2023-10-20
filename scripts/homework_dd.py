@@ -45,22 +45,22 @@ class Homework_dd():
 
         ## This function receives the lidar message and copies this message to a member of the class  
 
-        if cmd_msg == 1:
+        if cmd_msg.data == 1:
             self.robot_vel.linear.x=0.25
             rospy.Timer(rospy.Duration(4), self.timer_cb, True)
-        elif cmd_msg == 2:
+        elif cmd_msg.data == 2:
             self.robot_vel.linear.x=0.25
             rospy.Timer(rospy.Duration(8), self.timer_cb, True)
-        elif cmd_msg == 3:
+        elif cmd_msg.data == 3:
             self.robot_vel.linear.x=0.5
             rospy.Timer(rospy.Duration(4), self.timer_cb, True)
-        elif cmd_msg == 4:
+        elif cmd_msg.data == 4:
             self.robot_vel.linear.x=0.5
             rospy.Timer(rospy.Duration(6), self.timer_cb, True)
-        elif cmd_msg == 5:
+        elif cmd_msg.data == 5:
             self.robot_vel.linear.x=1.0
             rospy.Timer(rospy.Duration(2), self.timer_cb, True)
-        elif cmd_msg == 6:
+        elif cmd_msg.data == 6:
             self.robot_vel.linear.x=1.0
             rospy.Timer(rospy.Duration(3), self.timer_cb, True)
  
