@@ -1,0 +1,4 @@
+<launch>
+    <node pkg='binercito' name='homework_dd' type='homework_dd.py'/>
+    <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
+</launch>
