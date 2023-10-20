@@ -49,8 +49,10 @@ float pos_antr=0;
 
 
 float Ts;
-float kp, ki, kd;
-float q0, q1, q2;
+float kpl, kil, kdl;
+float kpr, kir, kdr;
+float q0l, q1l, q2l;
+float q0r, q1r, q2r;
 float ul[2] = {0.0, 0.0}; // u[0] salida actual   u[1] salida anterior
 float el[3] = {0.0, 0.0, 0.0};  //e[0] error actual    e[1] anterior  e[2] dos veces anterior
 float ur[2] = {0.0, 0.0}; // u[0] salida actual   u[1] salida anterior
@@ -62,7 +64,10 @@ float wr=0;
 float v = 0;
 float w = 0;
 
+bool hasMessage = false;
+
 void messageCb(const geometry_msgs::Twist &tw_cb){
+  hasMessage = true;
   twist = tw_cb;
 }
 
@@ -86,14 +91,29 @@ void setup() {
   pinMode(motorPin1r,OUTPUT);
   pinMode(motorPin2r,OUTPUT);
   
-  kp = 4.4;
-  ki = 30;
-  kd = 0.01;
+//  kpl = 4.4;
+//  kil = 30;
+//  kdl = 0.01;
+//  kpr = 4.4;
+//  kir = 30;
+//  kdr = 0.01;
+
+  kpl = 1.18;
+  kil = 0.12;
+  kdl = 0.01;
+  kpr = 1.079;
+  kir = 0.15;
+  kdr = 0.01;
+  
   Ts = 0.02; 
  
-  q0= kp+(ki*Ts/2)+(kd/Ts);
-  q1= -kp+(ki*Ts/2)-(2.0*kd/Ts);
-  q2= kd/Ts;
+  q0l= kpl+(kil*Ts/2)+(kdl/Ts);
+  q1l= -kpl+(kil*Ts/2)-(2.0*kdl/Ts);
+  q2l= kdl/Ts;
+
+  q0r= kpr+(kir*Ts/2)+(kdr/Ts);
+  q1r= -kpr+(kir*Ts/2)-(2.0*kdr/Ts);
+  q2r= kdr/Ts;
 
   nh.initNode();
   nh.subscribe(sub);
@@ -106,83 +126,100 @@ void setup() {
 
 void loop() {
 // Linea de tiempo se usa para controlar el tiempo demuestreo  
- if(micros()-tiempo>dt*1000000)
- {
-  v = twist.linear.x;
-  w = twist.angular.z;
-  wl_ref = ((2.0 * v - WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
-  wr_ref = ((2.0 * v + WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
+  if(hasMessage){
+   if(micros()-tiempo>dt*1000000)
+   {
+    v = twist.linear.x;
+    w = twist.angular.z;
+    wl_ref = ((2.0 * v - WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
+    wr_ref = ((2.0 * v + WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
+    
+    tiempo=micros();
+    posl=contadorl;
+    posr=contadorr;
+    //Realizar la converción según el motor
+    wl=(posl-pos_antl)*2.6786;
+    wr=(posr-pos_antr)*2.6786;
   
-  tiempo=micros();
-  posl=contadorl;
-  posr=contadorr;
-  //Realizar la converción según el motor
-  wl=(posl-pos_antl)*2.6786;
-  wr=(posr-pos_antr)*2.6786;
-
-//INICIO DE AREA DE CONTROL
-    //calcular la señal de error
-    el[0] = wl_ref-wl;
-    //calcular la ecuación en diferencias
-    ul[0]=q0*el[0]+q1*el[1]+q2*el[2]+ul[1];
-    //limitar la señal de control
-    if(ul[0] > 255.0) ul[0] = 255;
-    if(ul[0] < -255.0) ul[0] = -255;
-    //corrimiento para mover las muestras
-    el[2] = el[1];
-    el[1] = el[0];
-    ul[1] = ul[0];
-// //FIN DE AREA DE CONTROL
-
-//INICIO DE AREA DE CONTROL
-    //calcular la señal de error
-    er[0] = wr_ref-wr;
-    //calcular la ecuación en diferencias
-    ur[0]=q0*er[0]+q1*er[1]+q2*er[2]+ur[1];
-    //limitar la señal de control
-    if(ur[0] > 255.0) ur[0] = 255;
-    if(ur[0] < -255.0) ur[0] = -255;
-    //corrimiento para mover las muestras
-    er[2] = er[1];
-    er[1] = er[0];
-    ur[1] = ur[0];
-// //FIN DE AREA DE CONTROL
-
-  //Enviamos voltaje a puertos salida PWM
-  if ((int)ul[0]<0){
-    analogWrite(motorPin1l,0);
-    analogWrite(motorPin2l,(int)(-ul[0]));
+  if(wl_ref != 0.0){
+  //INICIO DE AREA DE CONTROL
+      //calcular la señal de error
+      el[0] = wl_ref-wl;
+      //calcular la ecuación en diferencias
+      ul[0]=q0l*el[0]+q1l*el[1]+q2l*el[2]+ul[1];
+      //limitar la señal de control
+      if(ul[0] > 255.0) ul[0] = 255;
+      if(ul[0] < -255.0) ul[0] = -255;
+      //corrimiento para mover las muestras
+      el[2] = el[1];
+      el[1] = el[0];
+      ul[1] = ul[0];
+  // //FIN DE AREA DE CONTROL
   }
-  else if ((int)ul[0]>=0){
-    analogWrite(motorPin1l,(int)ul[0]);
-    analogWrite(motorPin2l,0);
+  else{
+      el[2] = 0.0;
+      el[1] = 0.0;
+      el[0] = 0.0;
+      ul[1] = 0.0;
+      ul[0] = 0.0;
   }
-
-  //Enviamos voltaje a puertos salida PWM
-  if ((int)ur[0]<0){
-    analogWrite(motorPin1r,0);
-    analogWrite(motorPin2r,(int)(-ur[0]));
+  if(wr_ref != 0.0){
+  //INICIO DE AREA DE CONTROL
+      //calcular la señal de error
+      er[0] = wr_ref-wr;
+      //calcular la ecuación en diferencias
+      ur[0]=q0r*er[0]+q1r*er[1]+q2r*er[2]+ur[1];
+      //limitar la señal de control
+      if(ur[0] > 255.0) ur[0] = 255;
+      if(ur[0] < -255.0) ur[0] = -255;
+      //corrimiento para mover las muestras
+      er[2] = er[1];
+      er[1] = er[0];
+      ur[1] = ur[0];
+  // //FIN DE AREA DE CONTROL
   }
-  else if ((int)ur[0]>=0){
-    analogWrite(motorPin1r,(int)ur[0]);
-    analogWrite(motorPin2r,0);
+  else{
+      er[2] = 0.0;
+      er[1] = 0.0;
+      er[0] = 0.0;
+      ur[1] = 0.0;
+      ur[0] = 0.0;
   }
+    //Enviamos voltaje a puertos salida PWM
+    if ((int)ul[0]<0){
+      analogWrite(motorPin1l,0);
+      analogWrite(motorPin2l,(int)(-ul[0]));
+    }
+    else if ((int)ul[0]>=0){
+      analogWrite(motorPin1l,(int)ul[0]);
+      analogWrite(motorPin2l,0);
+    }
   
-  wl_ref_msg.data = wl_ref;
-  wl_msg.data = wl;
-  wl_refT.publish(&wl_ref_msg);
-  wlT.publish(&wl_msg);
-
-  wr_ref_msg.data = wr_ref;
-  wr_msg.data = wr;
-  wr_refT.publish(&wr_ref_msg);
-  wrT.publish(&wr_msg);
+    //Enviamos voltaje a puertos salida PWM
+    if ((int)ur[0]<0){
+      analogWrite(motorPin1r,0);
+      analogWrite(motorPin2r,(int)(-ur[0]));
+    }
+    else if ((int)ur[0]>=0){
+      analogWrite(motorPin1r,(int)ur[0]);
+      analogWrite(motorPin2r,0);
+    }
+    
+    wl_ref_msg.data = wl_ref;
+    wl_msg.data = ul[0];
+    wl_refT.publish(&wl_ref_msg);
+    wlT.publish(&wl_msg);
   
-  pos_antl=posl;
-  pos_antr=posr;
- }
- nh.spinOnce();
- delay(1);
+    wr_ref_msg.data = wr_ref;
+    wr_msg.data = ur[0];
+    wr_refT.publish(&wr_ref_msg);
+    wrT.publish(&wr_msg);
+    
+    pos_antl=posl;
+    pos_antr=posr;
+   }
+  }
+  nh.spinOnce();
 }
 
 //Interrupcion de Encoder 1
