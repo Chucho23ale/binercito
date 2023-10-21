@@ -11,7 +11,7 @@ class Homework_dd():
 
     def __init__(self):  
 
-        rospy.init_node("ObjectFollower", anonymous=True)  
+        rospy.init_node("Homework_dd", anonymous=True)  
 
         rospy.on_shutdown(self.cleanup)  
 
@@ -63,9 +63,6 @@ class Homework_dd():
         elif cmd_msg.data == 6:
             self.robot_vel.linear.x=1.0
             rospy.Timer(rospy.Duration(3), self.timer_cb, True)
-        elif cmd_msg.data == 6:
-            self.robot_vel.linear.x=1.0
-            rospy.Timer(rospy.Duration(1), self.timer_cb, True)
  
 
 

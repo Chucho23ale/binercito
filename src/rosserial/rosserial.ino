@@ -64,11 +64,13 @@ float wr=0;
 float v = 0;
 float w = 0;
 
-bool hasMessage = false;
+int hasMessage = 0;
+float offsetcito = 18;
 
 void messageCb(const geometry_msgs::Twist &tw_cb){
-  hasMessage = true;
-  twist = tw_cb;
+  hasMessage = 1;
+  v = tw_cb.linear.x;
+  w = tw_cb.angular.z;
 }
 
 ros::Subscriber<geometry_msgs::Twist>sub("ard_motor", &messageCb);
@@ -91,19 +93,26 @@ void setup() {
   pinMode(motorPin1r,OUTPUT);
   pinMode(motorPin2r,OUTPUT);
   
-//  kpl = 4.4;
-//  kil = 30;
+  kpl = 4.95;
+  kil = 30;
+  kdl = 0.02;
+  kpr = 5.0;
+  kir = 30;
+  kdr = 0.01;
+
+//  kpl = 0.0138;
+//  kil = 12.29;
 //  kdl = 0.01;
-//  kpr = 4.4;
-//  kir = 30;
+//  kpr = 0.0142;
+//  kir = 11.85;
 //  kdr = 0.01;
 
-  kpl = 1.18;
-  kil = 0.12;
-  kdl = 0.01;
-  kpr = 1.079;
-  kir = 0.15;
-  kdr = 0.01;
+//  kpl = 1.18;
+//  kil = 0.12;
+//  kdl = 0.01;
+//  kpr = 1.079;
+//  kir = 0.15;
+//  kdr = 0.01;
   
   Ts = 0.02; 
  
@@ -126,11 +135,9 @@ void setup() {
 
 void loop() {
 // Linea de tiempo se usa para controlar el tiempo demuestreo  
-  if(hasMessage){
+  if(hasMessage == 1){
    if(micros()-tiempo>dt*1000000)
    {
-    v = twist.linear.x;
-    w = twist.angular.z;
     wl_ref = ((2.0 * v - WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
     wr_ref = ((2.0 * v + WHEELDIST * w) / (2.0 * WHEELRAD))/(0.10472);
     
@@ -141,50 +148,107 @@ void loop() {
     wl=(posl-pos_antl)*2.6786;
     wr=(posr-pos_antr)*2.6786;
   
-  if(wl_ref != 0.0){
-  //INICIO DE AREA DE CONTROL
-      //calcular la señal de error
-      el[0] = wl_ref-wl;
-      //calcular la ecuación en diferencias
-      ul[0]=q0l*el[0]+q1l*el[1]+q2l*el[2]+ul[1];
-      //limitar la señal de control
-      if(ul[0] > 255.0) ul[0] = 255;
-      if(ul[0] < -255.0) ul[0] = -255;
-      //corrimiento para mover las muestras
-      el[2] = el[1];
-      el[1] = el[0];
-      ul[1] = ul[0];
-  // //FIN DE AREA DE CONTROL
-  }
-  else{
-      el[2] = 0.0;
-      el[1] = 0.0;
-      el[0] = 0.0;
-      ul[1] = 0.0;
-      ul[0] = 0.0;
-  }
-  if(wr_ref != 0.0){
-  //INICIO DE AREA DE CONTROL
-      //calcular la señal de error
-      er[0] = wr_ref-wr;
-      //calcular la ecuación en diferencias
-      ur[0]=q0r*er[0]+q1r*er[1]+q2r*er[2]+ur[1];
-      //limitar la señal de control
-      if(ur[0] > 255.0) ur[0] = 255;
-      if(ur[0] < -255.0) ur[0] = -255;
-      //corrimiento para mover las muestras
-      er[2] = er[1];
-      er[1] = er[0];
-      ur[1] = ur[0];
-  // //FIN DE AREA DE CONTROL
-  }
-  else{
-      er[2] = 0.0;
-      er[1] = 0.0;
-      er[0] = 0.0;
-      ur[1] = 0.0;
-      ur[0] = 0.0;
-  }
+    if(wl < offsetcito && wl_ref != 0){
+        ul[0]+=1;
+        wl+=0.6;
+    }
+    else if(wl_ref != 0){
+    //INICIO DE AREA DE CONTROL
+        //calcular la señal de error
+        el[0] = wl_ref-wl;
+        //calcular la ecuación en diferencias
+        ul[0]=q0l*el[0]+q1l*el[1]+q2l*el[2]+ul[1];
+        //limitar la señal de control
+        if(ul[0] > 255.0) ul[0] = 255;
+        if(ul[0] < -255.0) ul[0] = -255;
+        //corrimiento para mover las muestras
+        el[2] = el[1];
+        el[1] = el[0];
+        ul[1] = ul[0];
+    // //FIN DE AREA DE CONTROL
+    }
+    else{
+        el[2] = 0.0;
+        el[1] = 0.0;
+        el[0] = 0.0;
+        ul[1] = 0.0;
+        ul[0] = 0.0;
+    }
+
+    if(wr < offsetcito && wr_ref != 0){
+      ur[0]+=1;
+      wr+=0.6;
+    }
+    else if(wr_ref != 0){
+    //INICIO DE AREA DE CONTROL
+        //calcular la señal de error
+        er[0] = wr_ref-wr;
+        //calcular la ecuación en diferencias
+        ur[0]=q0r*er[0]+q1r*er[1]+q2r*er[2]+ur[1];
+        //limitar la señal de control
+        if(ur[0] > 255.0) ur[0] = 255;
+        if(ur[0] < -255.0) ur[0] = -255;
+        //corrimiento para mover las muestras
+        er[2] = er[1];
+        er[1] = er[0];
+        ur[1] = ur[0];
+    // //FIN DE AREA DE CONTROL
+    }
+    else{
+        er[2] = 0.0;
+        er[1] = 0.0;
+        er[0] = 0.0;
+        ur[1] = 0.0;
+        ur[0] = 0.0;
+    }
+
+//  if(wl_ref != 0){
+//    //INICIO DE AREA DE CONTROL
+//        //calcular la señal de error
+//        el[0] = wl_ref-wl;
+//        //calcular la ecuación en diferencias
+//        ul[0]=q0l*el[0]+q1l*el[1]+q2l*el[2]+ul[1];
+//        //limitar la señal de control
+//        if(ul[0] > 255.0) ul[0] = 255;
+//        if(ul[0] < -255.0) ul[0] = -255;
+//        //corrimiento para mover las muestras
+//        el[2] = el[1];
+//        el[1] = el[0];
+//        ul[1] = ul[0];
+//    // //FIN DE AREA DE CONTROL
+//    }
+//    else{
+//        el[2] = 0.0;
+//        el[1] = 0.0;
+//        el[0] = 0.0;
+//        ul[1] = 0.0;
+//        ul[0] = 0.0;
+//    }
+//
+//    
+//  if(wr_ref != 0){
+//    //INICIO DE AREA DE CONTROL
+//        //calcular la señal de error
+//        er[0] = wr_ref-wr;
+//        //calcular la ecuación en diferencias
+//        ur[0]=q0r*er[0]+q1r*er[1]+q2r*er[2]+ur[1];
+//        //limitar la señal de control
+//        if(ur[0] > 255.0) ur[0] = 255;
+//        if(ur[0] < -255.0) ur[0] = -255;
+//        //corrimiento para mover las muestras
+//        er[2] = er[1];
+//        er[1] = er[0];
+//        ur[1] = ur[0];
+//    // //FIN DE AREA DE CONTROL
+//    }
+//    else{
+//        er[2] = 0.0;
+//        er[1] = 0.0;
+//        er[0] = 0.0;
+//        ur[1] = 0.0;
+//        ur[0] = 0.0;
+//    }
+
     //Enviamos voltaje a puertos salida PWM
     if ((int)ul[0]<0){
       analogWrite(motorPin1l,0);
@@ -205,20 +269,27 @@ void loop() {
       analogWrite(motorPin2r,0);
     }
     
-    wl_ref_msg.data = wl_ref;
-    wl_msg.data = ul[0];
-    wl_refT.publish(&wl_ref_msg);
-    wlT.publish(&wl_msg);
-  
-    wr_ref_msg.data = wr_ref;
-    wr_msg.data = ur[0];
-    wr_refT.publish(&wr_ref_msg);
-    wrT.publish(&wr_msg);
-    
     pos_antl=posl;
     pos_antr=posr;
    }
   }
+  else{
+    analogWrite(motorPin1l,0);
+    analogWrite(motorPin2l,0);
+    analogWrite(motorPin1r,0);
+    analogWrite(motorPin2r,0);
+  }
+
+  wl_ref_msg.data = wl_ref;
+  wl_msg.data = wl;
+  wl_refT.publish(&wl_ref_msg);
+  wlT.publish(&wl_msg);
+
+  wr_ref_msg.data = wr_ref;
+  wr_msg.data = wr;
+  wr_refT.publish(&wr_ref_msg);
+  wrT.publish(&wr_msg);
+
   nh.spinOnce();
 }
 
