@@ -1,8 +1,6 @@
-#include <stdlib.h>
-#include <ros.h>
+#include "ros.h"
 #include <geometry_msgs/Twist.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 
  
 
@@ -13,8 +11,7 @@
 
 
 ros::NodeHandle  nh;
-std_msgs::Float32 wl_ref_msg, wl_msg, wr_ref_msg, wr_msg;
-geometry_msgs::Twist twist;
+std_msgs::Float64 wl_ref_msg, wl_msg, wr_ref_msg, wr_msg;
 ros::Publisher wl_refT("wl_ref", &wl_ref_msg);
 ros::Publisher wlT("wl", &wl_msg);
 ros::Publisher wr_refT("wr_ref", &wr_ref_msg);
@@ -65,7 +62,7 @@ float v = 0;
 float w = 0;
 
 int hasMessage = 0;
-float offsetcito = 18;
+int cycles = 0;
 
 void messageCb(const geometry_msgs::Twist &tw_cb){
   hasMessage = 1;
@@ -73,7 +70,7 @@ void messageCb(const geometry_msgs::Twist &tw_cb){
   w = tw_cb.angular.z;
 }
 
-ros::Subscriber<geometry_msgs::Twist>sub("ard_motor", &messageCb);
+ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
 
 
 //Configuracion de puertos E/S, Serial e interrupciones
@@ -93,26 +90,12 @@ void setup() {
   pinMode(motorPin1r,OUTPUT);
   pinMode(motorPin2r,OUTPUT);
   
-  kpl = 4.95;
+  kpl = 4.9;
   kil = 30;
   kdl = 0.02;
-  kpr = 5.0;
+  kpr = 4.9;
   kir = 30;
-  kdr = 0.01;
-
-//  kpl = 0.0138;
-//  kil = 12.29;
-//  kdl = 0.01;
-//  kpr = 0.0142;
-//  kir = 11.85;
-//  kdr = 0.01;
-
-//  kpl = 1.18;
-//  kil = 0.12;
-//  kdl = 0.01;
-//  kpr = 1.079;
-//  kir = 0.15;
-//  kdr = 0.01;
+  kdr = 0.02;
   
   Ts = 0.02; 
  
@@ -135,6 +118,18 @@ void setup() {
 
 void loop() {
 // Linea de tiempo se usa para controlar el tiempo demuestreo  
+
+   while (!nh.connected())
+  {
+    contadorr = 0.0;
+    contadorl = 0.0;
+    analogWrite(motorPin1l,0);
+    analogWrite(motorPin2l,0);
+    analogWrite(motorPin1r,0);
+    analogWrite(motorPin2r,0);
+    nh.spinOnce();
+  }
+  
   if(hasMessage == 1){
    if(micros()-tiempo>dt*1000000)
    {
@@ -148,9 +143,9 @@ void loop() {
     wl=(posl-pos_antl)*2.6786;
     wr=(posr-pos_antr)*2.6786;
   
-    if(wl < offsetcito && wl_ref != 0){
-        ul[0]+=1;
-        wl+=0.6;
+    if(cycles < 10 and wl_ref != 0){
+        ul[0]+=3;
+        cycles++;
     }
     else if(wl_ref != 0){
     //INICIO DE AREA DE CONTROL
@@ -175,9 +170,9 @@ void loop() {
         ul[0] = 0.0;
     }
 
-    if(wr < offsetcito && wr_ref != 0){
-      ur[0]+=1;
-      wr+=0.6;
+    if(cycles<10 and wr_ref != 0){
+      ur[0]+=3;
+      cycles++;
     }
     else if(wr_ref != 0){
     //INICIO DE AREA DE CONTROL
@@ -201,53 +196,6 @@ void loop() {
         ur[1] = 0.0;
         ur[0] = 0.0;
     }
-
-//  if(wl_ref != 0){
-//    //INICIO DE AREA DE CONTROL
-//        //calcular la señal de error
-//        el[0] = wl_ref-wl;
-//        //calcular la ecuación en diferencias
-//        ul[0]=q0l*el[0]+q1l*el[1]+q2l*el[2]+ul[1];
-//        //limitar la señal de control
-//        if(ul[0] > 255.0) ul[0] = 255;
-//        if(ul[0] < -255.0) ul[0] = -255;
-//        //corrimiento para mover las muestras
-//        el[2] = el[1];
-//        el[1] = el[0];
-//        ul[1] = ul[0];
-//    // //FIN DE AREA DE CONTROL
-//    }
-//    else{
-//        el[2] = 0.0;
-//        el[1] = 0.0;
-//        el[0] = 0.0;
-//        ul[1] = 0.0;
-//        ul[0] = 0.0;
-//    }
-//
-//    
-//  if(wr_ref != 0){
-//    //INICIO DE AREA DE CONTROL
-//        //calcular la señal de error
-//        er[0] = wr_ref-wr;
-//        //calcular la ecuación en diferencias
-//        ur[0]=q0r*er[0]+q1r*er[1]+q2r*er[2]+ur[1];
-//        //limitar la señal de control
-//        if(ur[0] > 255.0) ur[0] = 255;
-//        if(ur[0] < -255.0) ur[0] = -255;
-//        //corrimiento para mover las muestras
-//        er[2] = er[1];
-//        er[1] = er[0];
-//        ur[1] = ur[0];
-//    // //FIN DE AREA DE CONTROL
-//    }
-//    else{
-//        er[2] = 0.0;
-//        er[1] = 0.0;
-//        er[0] = 0.0;
-//        ur[1] = 0.0;
-//        ur[0] = 0.0;
-//    }
 
     //Enviamos voltaje a puertos salida PWM
     if ((int)ul[0]<0){
@@ -291,6 +239,7 @@ void loop() {
   wrT.publish(&wr_msg);
 
   nh.spinOnce();
+  delay(15);
 }
 
 //Interrupcion de Encoder 1
