@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find ydlidar_ros_driver)/launch/X4.launch" args='__port:=/dev/ttyUSB0'/>
+    <node pkg='binercito' name='obj_follower' type='object_follower.py'/>
+    <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
+</launch>

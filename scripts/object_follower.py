@@ -5,6 +5,8 @@ import rospy
 from sensor_msgs.msg import LaserScan 
 from geometry_msgs.msg import Twist
 
+thresholdDist = 0.3
+
 # This class will subscribe to the /base_scan topic and print some data 
 
 class ObjectFollower():  
@@ -12,15 +14,11 @@ class ObjectFollower():
     def __init__(self):  
 
         rospy.init_node("ObjectFollower", anonymous=True)  
-
         rospy.on_shutdown(self.cleanup)  
-
- 
-
         ############    SUBSCRIBERS   #######################  
 
         rospy.Subscriber("scan", LaserScan, self.lidar_cb)  
-        pub = rospy.Publisher("ard_motor", Twist, queue_size=1)
+        self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
 
         ############ CONSTANTS AND VARIABLES ################  
 
@@ -38,16 +36,18 @@ class ObjectFollower():
          
 
         while not rospy.is_shutdown():  
-
             if self.lidar.ranges:
                 closest_range = min(self.lidar.ranges)
                 index = self.lidar.ranges.index(closest_range)
                 angle = self.lidar.angle_min + index * self.lidar.angle_increment
-                v=kv*closest_range
+                if closest_range > thresholdDist:
+                    v=kv*closest_range
+                else:
+                    v=0.0
                 w=kw*angle
                 self.robot_vel.linear.x=v
                 self.robot_vel.angular.z=w
-                pub.publish(self.robot_vel)
+                self.pub.publish(self.robot_vel)
 
             r.sleep()  #It is very important that the r.sleep function is called at least once every cycle.  
 
@@ -59,21 +59,11 @@ class ObjectFollower():
 
         self.lidar = lidar_msg 
 
- 
-
-         
-
-         
-
     def cleanup(self):  
-
-        #This function is called just before finishing the node  
-
-        # You can use it to clean things up before leaving  
-
-        # Example: stop the robot before finishing a node.    
-
         print("I'm dying, bye bye!!!")  
+        self.robot_vel.linear.x=0.0
+        self.robot_vel.angular.z=0.0
+        self.pub.publish(self.robot_vel)
 
  
 
