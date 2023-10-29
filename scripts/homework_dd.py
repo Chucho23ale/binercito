@@ -20,7 +20,7 @@ class Homework_dd():
         ############    SUBSCRIBERS   #######################  
 
         rospy.Subscriber("cmd", Int32, self.cmd_cb)  
-        self.pub = rospy.Publisher("ard_motor", Twist, queue_size=1)
+        self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
 
         ############ CONSTANTS AND VARIABLES ################  
 

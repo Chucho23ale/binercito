@@ -92,10 +92,10 @@ void setup() {
   
   kpl = 4.9;
   kil = 30;
-  kdl = 0.02;
+  kdl = 0.0675;
   kpr = 4.9;
   kir = 30;
-  kdr = 0.02;
+  kdr = 0.01;
   
   Ts = 0.02; 
  
