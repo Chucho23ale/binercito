@@ -25,7 +25,7 @@ class ObjectFollower():
         self.lidar = LaserScan() #The data from the lidar will be kept here. 
         self.robot_vel = Twist()
         kv = 1.0
-        kw = 1.0
+        kw = 2.0
         v = 0.0
         w = 0.0
 
