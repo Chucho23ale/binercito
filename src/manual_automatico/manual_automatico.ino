@@ -36,9 +36,10 @@ const int motorPin1r=12;
 const int motorPin2r=13;
 
 // Joystick
-const int joystick_enable  = 15;
+const int joystick_enable  = 18;
 
-
+const int timeThreshold = 150;
+long startTime = 0;
 
 float dt=0.02;
 float tiempo=0;
@@ -73,7 +74,7 @@ float pwmR=0;
 int hasMessage = 0;
 int cycles = 0;
 
-bool isManual = false;
+bool isManual = true;
 
 void messageCb(const geometry_msgs::Twist &tw_cb){
   hasMessage = 1;
@@ -86,6 +87,12 @@ ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
 
 //Configuracion de puertos E/S, Serial e interrupciones
 void setup() {
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(joystick_enable, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(joystick_enable), debounce, FALLING);
+  
+  
   attachInterrupt(digitalPinToInterrupt(pinCanalAl),Encoder,RISING);
   pinMode(pinCanalAl,INPUT);
   pinMode(pinCanalBl,INPUT);
@@ -130,12 +137,8 @@ void setup() {
 void loop() {
 // Linea de tiempo se usa para controlar el tiempo demuestreo 
 
-  if (digitalRead(joystick_enable)==HIGH)
-    isManual = true;
-  else
-    isManual = false;
-
   if(isManual){
+    digitalWrite(LED_BUILTIN, HIGH);
     x=analogRead(A0);
     y=analogRead(A1);
 
@@ -181,16 +184,17 @@ void loop() {
 
   }
   else{
-    while (!nh.connected())
-    {
-      contadorr = 0.0;
-      contadorl = 0.0;
-      analogWrite(motorPin1l,0);
-      analogWrite(motorPin2l,0);
-      analogWrite(motorPin1r,0);
-      analogWrite(motorPin2r,0);
-      nh.spinOnce();
-    }
+    digitalWrite(LED_BUILTIN, LOW);
+//    while (!nh.connected())
+//    {
+//      contadorr = 0.0;
+//      contadorl = 0.0;
+//      analogWrite(motorPin1l,0);
+//      analogWrite(motorPin2l,0);
+//      analogWrite(motorPin1r,0);
+//      analogWrite(motorPin2r,0);
+//      nh.spinOnce();
+//    }
     
     if(hasMessage == 1){
     if(micros()-tiempo>dt*1000000)
@@ -321,4 +325,16 @@ void Encoder2()
     contadorr++;}
     else{
       contadorr--;}
+}
+
+void debounce()
+{
+  if (millis() - startTime > timeThreshold)
+  {
+    if (!isManual)
+      isManual = true;
+    else if(isManual)
+      isManual = false;
+    startTime = millis();
+  }
 }
