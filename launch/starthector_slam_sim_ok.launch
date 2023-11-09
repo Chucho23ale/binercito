@@ -21,12 +21,13 @@ for example the two_wheels_description simulation -->
 
   <!-- launches the keyboard teleoperation node to drive the two_wheels_descritption robot around -->
   <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop_twist_keyboard" output="screen"/>
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_lidar_broadcaster" args="0 0 0.18  0 0 0 base_link  laser_frame"/>
+  <!--node pkg="tf2_ros" type="static_transform_publisher" name="base_lidar_broadcaster" args="0 0 0.18  0 0 0 base_link  laser_frame"/-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_laser" args="0.0 0.0 0.0 0.0 0.0 0.0 base_link base_footprint" />
 
-  <include file="$(find ydlidar_ros_driver)/launch/X4.launch" />
+  <include file="$(find binercito)/launch/X4.launch" />
   <node pkg='binercito' name='teleop' type='Teleop.py'/>
-  <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
-  <node pkg='joy' name='joy' type='joy_node'/>
+  <!--node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/-->
+  <!--node pkg='joy' name='joy' type='joy_node'/-->
 
   <!-- https://wiki.ros.org/joy/Tutorials/ConfiguringALinuxJoystick -->
 
