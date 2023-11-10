@@ -182,19 +182,13 @@ void loop() {
       analogWrite(motorPin2r,0);
     }
 
+
+    contadorr = 0.0;
+    contadorl = 0.0;
+
   }
   else{
     digitalWrite(LED_BUILTIN, LOW);
-    while (!nh.connected())
-    {
-      contadorr = 0.0;
-      contadorl = 0.0;
-      analogWrite(motorPin1l,0);
-      analogWrite(motorPin2l,0);
-      analogWrite(motorPin1r,0);
-      analogWrite(motorPin2r,0);
-      nh.spinOnce();
-    }
     
     if(hasMessage == 1){
     if(micros()-tiempo>dt*1000000)
