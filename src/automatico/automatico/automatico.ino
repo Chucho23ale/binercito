@@ -86,10 +86,6 @@ ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
 
 //Configuracion de puertos E/S, Serial e interrupciones
 void setup() {
-
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(joystick_enable, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(joystick_enable), debounce, FALLING);
   
   
   attachInterrupt(digitalPinToInterrupt(pinCanalAl),Encoder,RISING);
@@ -265,16 +261,4 @@ void Encoder2()
     contadorr++;}
     else{
       contadorr--;}
-}
-// Interrupción del joystick
-void debounce()
-{
-  if (millis() - startTime > timeThreshold)
-  {
-    if (!isManual)
-      isManual = true;
-    else if(isManual)
-      isManual = false;
-    startTime = millis();
-  }
 }
