@@ -36,7 +36,16 @@ void loop() {
       delay(1000);
       myServo.write(0);
       delay(50);
+      seed_trigger == " ";
     }
+    
+      myServo.write(0);
+      delay(50);
+      myServo.write(90);
+      delay(1000);
+      myServo.write(0);
+      delay(50);
+      seed_trigger == " ";
   }
 
   nh.spinOnce();
