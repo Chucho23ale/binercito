@@ -16,15 +16,8 @@ ros::Publisher wl_refT("wl_ref", &wl_ref_msg);
 ros::Publisher wlT("wl", &wl_msg);
 ros::Publisher wr_refT("wr_ref", &wr_ref_msg);
 ros::Publisher wrT("wr", &wr_msg);
-std_msgs::String auto_seed;
-Servo myServo;
 
-void seedCb(const std_msgs::String &auto_seed){
-  seed_trigger = auto_seed.data;
-}
 
-ros::Subscriber<std_msgs::String>subSeed("/string_command", seedCb);
-ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
 
 //Encoder #1
 const int pinCanalAl=2;
@@ -33,9 +26,6 @@ const int pinCanalBl=4;
 //Encoder #2
 const int pinCanalAr=3;
 const int pinCanalBr=5;
-
-// Seed 
-const int pinServo=9;
 
 //Control Motor 1
 const int motorPin1l=10;
@@ -92,12 +82,12 @@ void messageCb(const geometry_msgs::Twist &tw_cb){
   w = tw_cb.angular.z;
 }
 
+ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
+
 
 //Configuracion de puertos E/S, Serial e interrupciones
 void setup() {
 
-  myServo.attach(pinServo);
-  
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(joystick_enable, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(joystick_enable), debounce, FALLING);
@@ -137,7 +127,6 @@ void setup() {
 
   nh.initNode();
   nh.subscribe(sub);
-  nh.subscrbe(subSeed);
   nh.advertise(wl_refT);
   nh.advertise(wlT);
   nh.advertise(wr_refT);
@@ -200,17 +189,6 @@ void loop() {
   }
   else{
     digitalWrite(LED_BUILTIN, LOW);
-
-    // Aplicacion extra: Semilla
-    if(seed_trigger == "drop"){
-      myServo.write(0);
-      delay(500);
-      myServo.write(45);
-      delay(500);
-      myServo.write(0);
-      delay(500);
-      seed_trigger == "no drop";
-    }
     
     if(hasMessage == 1){
     if(micros()-tiempo>dt*1000000)

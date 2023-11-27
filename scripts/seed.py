@@ -16,10 +16,9 @@ class SeedClass():
         self.seed_message = "drop"
 
         #********** INIT NODE **********### 
-        self.rate = rospy.Rate(0.05) #0.05Hz - cada 20seg
-        print("Node initialized 0.05hz")
-        while not rospy.is_shutdown():
-            self.seed_message = "drop"
+        self.rate = rospy.Rate(0.2) #0.2Hz - cada 5seg
+        print("Node initialized 0.2hz")
+        while not rospy.is_shutdown(): 
             self.seed.publish(self.seed_message)
             self.rate.sleep()  #It is very important that the r.sleep function is called at least onece every cycle.    
 
