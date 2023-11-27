@@ -1,5 +1,5 @@
 <launch>
     <include file="$(find binercito)/launch/X4.launch" />
-    <node pkg='binercito' name='avoidance' type='vivi_obstacle_avoidance.py'/>
+    <node pkg='binercito' name='avoidance' type='vivi_obstacle_avoid.py'/>
     <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
 </launch>
