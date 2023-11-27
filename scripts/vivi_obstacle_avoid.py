@@ -11,7 +11,7 @@ class LaserSubClass():
         rospy.on_shutdown(self.cleanup) 
 
         ############    SUBSCRIBERS   ####################### 
-        rospy.Subscriber("base_scan", LaserScan, self.lidar_cb) 
+        rospy.Subscriber("scan", LaserScan, self.lidar_cb) 
 
         ############    PUBLISHERS    #######################
         self.pub_cmd_vel = rospy.Publisher("cmd_vel",Twist,queue_size=1)
@@ -45,19 +45,16 @@ class LaserSubClass():
                     # checamos si closest_range esta dentro del area 
                     # de seguridad (d_stop)
                     if (closest_range <= self.d_stop):
-                        self.movement = "stop" # Bandera a "Stop"
                         # Para
                         self.robot_vel.linear.x   = 0
                         self.robot_vel.angular.z = 0
                         # Despues de parar, gira
-                        self.MoveInstruction()
-                        # Luego de girar, continua
-                        self.movement = "go" # Bandera a "go"
+                        self.robot_vel.angular.z = -1.0 #Turn to the right
+                        self.robot_vel.linear.x = 0.0
                 else:
-                    # Bandera a "go" por default
-                    self.movement = "go"
-                    # Move forward
-                    self.MoveInstruction()
+                   # forward - TO the front
+                    self.robot_vel.linear.x = 0.2 #Desired linear speed [m/s]
+                    self.robot_vel.angular.z = 0.0
 
                 # Lo publico a ROS - a Gazebo pa mover el robot
                 self.pub_cmd_vel.publish(self.robot_vel)
@@ -68,19 +65,6 @@ class LaserSubClass():
         ## This function receives the lidar message and copies this message to a member of the class 
         self.lidar = lidar_msg
 
-    def MoveInstruction(self): 
-        # Esta funcion maneja movimiento dependiendo de la bandera
-        if self.movement == "go":
-            # forward - TO the front
-            self.robot_vel.linear.x = 0.2 #Desired linear speed [m/s]
-            self.robot_vel.angular.z = 0.0
-            print("Avanzando..")
-
-        elif self.movement == "stop":
-            self.robot_vel.angular.z = -1.0 #Turn to the right
-            self.robot_vel.linear.x = 0.0
-            print("Evadiendo obstaculo..")
-
         
     def cleanup(self): 
         print("Stopping the robot")
@@ -89,8 +73,8 @@ class LaserSubClass():
         #This function is called just before finishing the node 
         # You can use it to clean things up before leaving 
         # Example: stop the robot before finishing a node.   
-        print("I'm dying, bye bye!!!")
+        print("Bye b*tch!!!")
 
 ############################### MAIN PROGRAM #################################### 
 if __name__ == "__main__": 
-    LaserSubClass() 
+    LaserSubClass()
