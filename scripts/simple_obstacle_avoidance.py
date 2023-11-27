@@ -24,7 +24,7 @@ class ObstacleAvoidance():
 
         ############    SUBSCRIBERS   #######################  
 
-        rospy.Subscriber("base_scan", LaserScan, self.lidar_cb)  
+        rospy.Subscriber("scan", LaserScan, self.lidar_cb)  
         self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
 
         ############ CONSTANTS AND VARIABLES ################  
