@@ -10,7 +10,7 @@ from geometry_msgs.msg import Twist
 class ObstacleAvoidance():  
 
     field_of_view = 1
-    d_stop = 1
+    d_stop = 0.2
     v = 0.3
     w = 0.5
 
@@ -45,7 +45,10 @@ class ObstacleAvoidance():
                 adjustment = self.field_of_view/2/self.lidar.angle_increment
                 new_ranges = self.lidar.ranges[int(mid-adjustment):int(mid+adjustment)]
 
-                closest_range = min(new_ranges)
+                if new_ranges.length()> 0:
+                    closest_range = min(new_ranges)
+                else:
+                    closest_range = 0 
 
                 if closest_range < self.d_stop:
                     self.robot_vel.linear.x=0

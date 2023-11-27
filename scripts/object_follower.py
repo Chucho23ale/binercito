@@ -5,7 +5,7 @@ import rospy
 from sensor_msgs.msg import LaserScan 
 from geometry_msgs.msg import Twist
 
-thresholdDist = 0.3
+thresholdDist = 0.4
 
 # This class will subscribe to the /base_scan topic and print some data 
 
