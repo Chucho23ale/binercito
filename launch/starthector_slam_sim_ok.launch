@@ -31,4 +31,7 @@ for example the two_wheels_description simulation -->
 
   <!-- https://wiki.ros.org/joy/Tutorials/ConfiguringALinuxJoystick -->
 
+
+  <node pkg='binercito' name='avoidance' type='vivi_obstacle_avoid.py'/>
+
 </launch>
