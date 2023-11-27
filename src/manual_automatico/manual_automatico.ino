@@ -1,22 +1,25 @@
 #include "ros.h"
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float64.h> 
-
- 
+#include <std_msgs/String.h>
+#include<Servo.h>
 
 #define WHEELRAD 0.0636 //The radius of the wheel (m) 
 
 #define WHEELDIST 0.34 //Distance between wheels (m) 
 
-
-
-ros::NodeHandle  nh;
-std_msgs::Float64 wl_ref_msg, wl_msg, wr_ref_msg, wr_msg;
+std_msgs::Float64 wl_ref_msg, wl_msg;
+std_msgs::Float64 wr_ref_msg, wr_msg;
 ros::Publisher wl_refT("wl_ref", &wl_ref_msg);
 ros::Publisher wlT("wl", &wl_msg);
 ros::Publisher wr_refT("wr_ref", &wr_ref_msg);
 ros::Publisher wrT("wr", &wr_msg);
-
+ros::NodeHandle  nh;
+std_msgs::String auto_seed;
+Servo myServo;
+long interval = 500;   //500ms delay with millis 
+String seed_trigger = "";
+long previousMillis = 0;   //Last state entering the millis condition
 
 
 //Encoder #1
@@ -26,6 +29,9 @@ const int pinCanalBl=4;
 //Encoder #2
 const int pinCanalAr=3;
 const int pinCanalBr=5;
+
+// Seed 
+const int pinServo=9;
 
 //Control Motor 1
 const int motorPin1l=10;
@@ -76,18 +82,24 @@ int cycles = 0;
 
 bool isManual = true;
 
+void seedCb(const std_msgs::String &auto_seed){
+  seed_trigger = auto_seed.data;
+}
+
 void messageCb(const geometry_msgs::Twist &tw_cb){
   hasMessage = 1;
   v = tw_cb.linear.x;
   w = tw_cb.angular.z;
 }
 
+ros::Subscriber<std_msgs::String>subSeed("/string_command", seedCb);
 ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
 
 
 //Configuracion de puertos E/S, Serial e interrupciones
 void setup() {
-
+  myServo.attach(pinServo);
+  
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(joystick_enable, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(joystick_enable), debounce, FALLING);
@@ -127,14 +139,30 @@ void setup() {
 
   nh.initNode();
   nh.subscribe(sub);
+  nh.subscribe(subSeed);
   nh.advertise(wl_refT);
   nh.advertise(wlT);
   nh.advertise(wr_refT);
   nh.advertise(wrT);
-
 }
 
 void loop() {
+      // Aplicacion extra: Semilla
+    if(seed_trigger == "drop"){
+      //Servo.write(0);
+      // Delay 500ms
+      //if(currentMillis - previousMillis > interval) {
+        // save the last time entering here
+        //  previousMillis = currentMillis;
+        //  myServo.write(45); 
+      //}
+      myServo.write(45);
+      delay(500);
+      myServo.write(0);
+      seed_trigger = "no drop";
+    }
+
+  
 // Linea de tiempo se usa para controlar el tiempo demuestreo 
 
   if(isManual){
@@ -189,6 +217,8 @@ void loop() {
   }
   else{
     digitalWrite(LED_BUILTIN, LOW);
+    unsigned long currentMillis = millis();
+
     
     if(hasMessage == 1){
     if(micros()-tiempo>dt*1000000)

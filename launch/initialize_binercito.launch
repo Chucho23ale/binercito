@@ -1,5 +1,6 @@
 <launch>
     <include file="$(find binercito)/launch/X4.launch" />
     <node pkg='binercito' name='obj_follower' type='object_follower.py'/>
+    <node pkg='binercito' name='seed' type='seed.py'/>
     <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
 </launch>
