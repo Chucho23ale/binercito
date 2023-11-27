@@ -11,7 +11,6 @@ std_msgs::String auto_seed;
 Servo myServo;
 
 void seedCb(const std_msgs::String &auto_seed){
-  hasMsgSeed = 1;
   seed_trigger = auto_seed.data;
 }
 
@@ -21,32 +20,21 @@ ros::Subscriber<std_msgs::String>subSeed("/string_command", seedCb);
 void setup() {
   // put your setup code here, to run once:
   myServo.attach(servoPin);
-  Serial.begin(9600);
   nh.initNode();
   nh.subscribe(subSeed);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(hasMsgSeed == 1){
     if(seed_trigger == "drop"){
       myServo.write(0);
-      delay(50);
-      myServo.write(90);
+      delay(1000);
+      myServo.write(45);
       delay(1000);
       myServo.write(0);
-      delay(50);
-      seed_trigger == " ";
+      delay(1000);
+      seed_trigger == "no drop";
     }
-    
-      myServo.write(0);
-      delay(50);
-      myServo.write(90);
-      delay(1000);
-      myServo.write(0);
-      delay(50);
-      seed_trigger == " ";
-  }
 
   nh.spinOnce();
   delay(15);
