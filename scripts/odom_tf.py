@@ -18,7 +18,7 @@ class Odom_tf():
     yant = 0
     dt = 0.05
     def __init__(self): 
-        rospy.init_node("Odom_tf", anonymous=True) 
+        rospy.init_node("odom_tf", anonymous=True) 
         rospy.on_shutdown(self.cleanup) 
 
         rospy.Subscriber("wr", Float64, self.wr_cb) 
