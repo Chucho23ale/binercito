@@ -1,23 +1,23 @@
 #!/usr/bin/env python3 
 import rospy
-from std_msgs.msg import String 
+
 from std_msgs.msg import Float64
-from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TransformStamped
-import tf_conversions
-import tf2_ros 
-import math
+from tf.transformations import quaternion_from_euler
+from tf2_ros import TransformBroadcaster 
+from math import cos, sin
 
 class Odom_tf(): 
     r = 0.0636
     l=0.34
-    wr = 0
-    wl = 0
-    thetaant = 0
-    xant = 0
-    yant = 0
+    wr = 0.0
+    wl = 0.0
+    thetaant = 0.0
+    xant = 0.0
+    yant = 0.0
     dt = 0.05
     def __init__(self): 
+
         rospy.init_node("odom_tf", anonymous=True) 
         rospy.on_shutdown(self.cleanup) 
 
@@ -31,12 +31,12 @@ class Odom_tf():
         while not rospy.is_shutdown():
             thetap = self.r * (self.wr - self.wl)/self.l
             theta = self.thetaant + (thetap*self.dt)
-            xp = (self.r(self.wr+self.wl)/2)*math.cos(theta)
-            yp = (self.r(self.wr+self.wl)/2)*math.sin(theta)
+            xp = (self.r*(self.wr+self.wl)/2.0)*cos(theta)
+            yp = (self.r*(self.wr+self.wl)/2.0)*sin(theta)
             x = self.xant + (xp*self.dt)
             y = self.yant + (yp*self.dt)
 
-            br = tf2_ros.TransformBroadcaster()
+            br = TransformBroadcaster()
             t = TransformStamped()
             t.header.stamp = rospy.Time.now()
             t.header.frame_id = "odom"
@@ -44,7 +44,7 @@ class Odom_tf():
             t.transform.translation.x = x
             t.transform.translation.y = y
             t.transform.translation.z = 0.0
-            q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
+            q = quaternion_from_euler(0, 0, theta)
             t.transform.rotation.x = q[0]
             t.transform.rotation.y = q[1]
             t.transform.rotation.z = q[2]
