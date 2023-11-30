@@ -1,10 +1,10 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python
 import rospy
 
 from std_msgs.msg import Float64
 from geometry_msgs.msg import TransformStamped
 from tf.transformations import quaternion_from_euler
-from tf2_ros import TransformBroadcaster 
+from tf import TransformBroadcaster 
 from math import cos, sin
 
 class Odom_tf(): 
@@ -37,19 +37,8 @@ class Odom_tf():
             y = self.yant + (yp*self.dt)
 
             br = TransformBroadcaster()
-            t = TransformStamped()
-            t.header.stamp = rospy.Time.now()
-            t.header.frame_id = "odom"
-            t.child_frame_id = "base_footprint"
-            t.transform.translation.x = x
-            t.transform.translation.y = y
-            t.transform.translation.z = 0.0
             q = quaternion_from_euler(0, 0, theta)
-            t.transform.rotation.x = q[0]
-            t.transform.rotation.y = q[1]
-            t.transform.rotation.z = q[2]
-            t.transform.rotation.w = q[3]
-            br.sendTransform(t)
+            br.sendTransform((x,y,0), q, rospy.Time.now(), "base_link", "odom")
 
             self.thetaant=theta
             self.xant = x

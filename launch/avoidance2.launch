@@ -1,13 +1,20 @@
 <launch>
+
+    <!-- Some general parameters -->
+	<param name="use_sim_time" value="false" />
+	<rosparam file="$(find binercito)/param/ros.yaml"/>
+
     <include file="$(find binercito)/launch/X4.launch" /> 
-    <node pkg='binercito' name='seed' type='seed.py'/>
     <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
 
     <node pkg='binercito' name='odom_tf' type='odom_tf.py'/>
 
     	<!-- Start the Operator to control the simulated robot -->
 	<node name="Operator" pkg="nav2d_operator" type="operator" >
-		<rosparam file="$(find nav2d_tutorials)/param/operator.yaml"/>
-		<rosparam file="$(find nav2d_tutorials)/param/costmap.yaml" ns="local_map" />
+		<rosparam file="$(find binercito)/param/operator.yaml"/>
+		<rosparam file="$(find binercito)/param/costmap.yaml" ns="local_map" />
 	</node>
+
+    <!-- RVIZ to view the visualization -->
+	<node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find binercito)/param/tutorial1.rviz" />
 </launch>
