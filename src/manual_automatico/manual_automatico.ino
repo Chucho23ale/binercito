@@ -93,7 +93,7 @@ void messageCb(const geometry_msgs::Twist &tw_cb){
 }
 
 ros::Subscriber<std_msgs::String>subSeed("/string_command", seedCb);
-ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb);
+ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel2", messageCb);
 
 
 //Configuracion de puertos E/S, Serial e interrupciones
