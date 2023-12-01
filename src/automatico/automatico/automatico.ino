@@ -81,7 +81,7 @@ void messageCb(const geometry_msgs::Twist &tw_cb){
   w = tw_cb.angular.z;
 }
 
-ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel", messageCb); 
+ros::Subscriber<geometry_msgs::Twist>sub("/cmd_vel2", messageCb); 
 
 
 //Configuracion de puertos E/S, Serial e interrupciones

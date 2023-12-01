@@ -8,6 +8,7 @@
     <node pkg='rosserial_python' name='rosserial' type='serial_node.py' args='/dev/ttyACM0'/>
 
     <node pkg='binercito' name='odom_tf' type='odom_tf.py'/>
+	<node pkg='binercito' name='odom_tf' type='odom_tf.py'/>
 
     	<!-- Start the Operator to control the simulated robot -->
 	<node name="Operator" pkg="nav2d_operator" type="operator" >

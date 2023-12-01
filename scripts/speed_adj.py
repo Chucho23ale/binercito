@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist
 
 class Speed_adj(): 
     mlx = 1
-    maz = 0.5
+    maz = 0.4
     n_s = Twist()
     def __init__(self): 
 
@@ -15,6 +15,9 @@ class Speed_adj():
         rospy.Subscriber("cmd_vel", Twist, self.cb) 
 
         self.pub = rospy.Publisher("cmd_vel2", Twist, queue_size=1)
+
+        rospy.spin() 
+
 
 
     def cb(self, msg):
